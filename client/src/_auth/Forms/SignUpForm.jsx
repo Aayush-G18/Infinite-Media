@@ -1,6 +1,7 @@
 import * as z from "zod"
+import API from "../../lib/axios.js"
+// import API from "axios"
 import { zodResolver } from "@hookform/resolvers/zod"
-
 import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
 import {Form,FormControl,FormField,FormItem,FormLabel,  FormMessage,} from "@/components/ui/form"
@@ -12,24 +13,40 @@ import { useState } from "react"
 
 
 const SignUpForm = () => {  
-  const [isLoading,setIsLoading]=useState(false)
+  // const [isLoading,setIsLoading]=useState(false)
+  const[error,setError]=useState("")
   const form = useForm({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
-      name:"",
-      username: "",
+      fullName:"",
+      userName: "",
       email:"",
-      password:""
+      password:"",
+      avatar:undefined
     },
   })
- 
   // 2. Define a submit handler.
   async function onSubmit(values) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    setIsLoading(true)
-    console.log(values)
+    try {
+      const res = await API.post("/users/register", {
+        fullName:values.fullName,
+        userName: values.userName,
+        email:values.email,
+        password:values.password,
+        avatar:values.avatar[0]
+      },{
+        headers:{
+          "Content-Type":"multipart/form-data"
+        }
+      });
+      console.log("response is: ", res);
+  } catch (err) {
+      setError(err?.message);
+      console.log(error)
   }
+}
   return (
     <Form {...form} >
       <div className="sm:w-420 flex-center flex-col ">
@@ -47,7 +64,7 @@ const SignUpForm = () => {
           className="flex flex-col  w-full mt-4">
           <FormField
             control={form.control}
-            name="name"
+            name="fullName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="shad-form_label">Name</FormLabel>
@@ -61,10 +78,10 @@ const SignUpForm = () => {
 
           <FormField
             control={form.control}
-            name="username"
+            name="userName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="shad-form_label">Username</FormLabel>
+                <FormLabel className="shad-form_label">UserName</FormLabel>
                 <FormControl>
                   <Input type="text" className="shad-input" {...field} />
                 </FormControl>
@@ -100,9 +117,25 @@ const SignUpForm = () => {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="avatar"
+            render={({ field}) => (
+              <FormItem>
+                <FormLabel className="shad-form_label">Avatar</FormLabel>
+                <FormControl>
+                  <Input type="file" id="picture" className="shad-input" onChange={(e)=>{
+                    field.onChange(e.target.files)
+                  }} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <Button type="submit" className="shad-button_primary">
-            {isLoading ?(<div className="flex-center gap-2"><Loader/> Loading...</div>):"Sign Up"}
+            {/* {isLoading ?(<div className="flex-center gap-2"><Loader/> Loading...</div>):"Sign Up"} */}
+            {error?(<p>error:{error}</p>):"Sign-up"}
           </Button>
 
           <p className="text-small-regular text-light-2 text-center mt-2">

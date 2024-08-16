@@ -25,7 +25,6 @@ import bcrypt from "bcrypt"
         type:String,
     },coverImage:{
         type:String,
-        required:true
     },
     watchHistory:[
         {
