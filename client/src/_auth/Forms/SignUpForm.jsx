@@ -1,20 +1,20 @@
 import * as z from "zod"
 import API from "../../lib/axios.js"
-// import API from "axios"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
+import Button  from "@/components/ui/buttonloading"
 import { useForm } from "react-hook-form"
 import {Form,FormControl,FormField,FormItem,FormLabel,  FormMessage,} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from "@/lib/validation"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Loader } from "@/components/shared/Loader"
 import { useState } from "react"
-
+import domparser from "../../lib/domparser.js"
 
 const SignUpForm = () => {  
-  // const [isLoading,setIsLoading]=useState(false)
+  const [isLoading,setIsLoading]=useState(false)
   const[error,setError]=useState("")
+  const navigate=useNavigate()
   const form = useForm({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
@@ -27,27 +27,30 @@ const SignUpForm = () => {
   })
   // 2. Define a submit handler.
   async function onSubmit(values) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     try {
+      setIsLoading(true);
       const res = await API.post("/users/register", {
-        fullName:values.fullName,
+        fullName: values.fullName,
         userName: values.userName,
-        email:values.email,
-        password:values.password,
-        avatar:values.avatar[0]
-      },{
-        headers:{
-          "Content-Type":"multipart/form-data"
+        email: values.email,
+        password: values.password,
+        avatar: values.avatar[0]
+      }, {
+        headers: {
+          "Content-Type": "multipart/form-data"
         }
       });
-      console.log("response is: ",res);
-  } catch (err) {
-      setError(err?.message);
-      console.log(error)
+      setIsLoading(false);
+      console.log("response is: ", res);
+      navigate("/sign-in");
+    } catch (err) {
+      const errorMessage=domparser(err)      
+      setError(errorMessage);
+      setIsLoading(false);
+      console.log(err);
+    }
   }
-}
-  return (
+    return (
     <Form {...form} >
       <div className="sm:w-420 flex-center flex-col ">
         <img src="/assets/images/logo.svg" alt="logo" />
@@ -132,10 +135,9 @@ const SignUpForm = () => {
               </FormItem>
             )}
           />
-
-          <Button type="submit" className="shad-button_primary">
-            {/* {isLoading ?(<div className="flex-center gap-2"><Loader/> Loading...</div>):"Sign Up"} */}
-            {error?(<p>error:{error}</p>):"Sign-up"}
+          {error?(<p className="text-red-600">{error}</p>):<></>}
+          <Button type="submit" loading={isLoading}  className="shad-button_primary">            
+            Sign Up
           </Button>
 
           <p className="text-small-regular text-light-2 text-center mt-2">

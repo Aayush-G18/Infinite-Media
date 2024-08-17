@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
+import Button  from "@/components/ui/buttonloading";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "@/components/shared/Loader";
 import API from "../../lib/axios";
+import domparser from "../../lib/domparser";
 
 // Define the validation schema with Zod
 const SignInValidation = z.object({
@@ -19,6 +20,7 @@ const SignInValidation = z.object({
 const SignInForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error,setError]=useState("")
+  const navigate=useNavigate()
   const form = useForm({
     resolver: zodResolver(SignInValidation),
     defaultValues: {
@@ -31,13 +33,18 @@ const SignInForm = () => {
     // Handle form submission
     // Simulate an async action
     try {
+      setIsLoading(true)
       const res=await API.post("/users/login",{
         email:values.email,
         password:values.password
       })
       console.log("responese is: ",res)
+      setIsLoading(false)
+      navigate("/")
     } catch (err) {
-      setError(err?.message);
+      const errorMessage=domparser(err)
+      setError(errorMessage);
+      setIsLoading(false)
       console.log(error)
     }
 
@@ -87,11 +94,9 @@ const SignInForm = () => {
             )}
           />
 
-          <Button type="submit" className="shad-button_primary">
-            {/* {isLoading ? (
-              <div className="w-full flex-center"><Loader />Loading...</div>
-            ) : "Sign In"} */}
-            {error?<p>{error}</p>:"Log-In"}
+          {error?(<p className="text-red-600">{error}</p>):<></>}
+          <Button type="submit" loading={isLoading}  className="shad-button_primary">            
+            Login
           </Button>
 
           <p className="text-small-regular text-light-2 text-center mt-2">
