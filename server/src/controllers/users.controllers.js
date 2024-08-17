@@ -92,15 +92,13 @@ const loginUser=asyncHandler(async(req,res)=>{
 
     const {email,password,userName}=req.body;
     //validation
-    if(!email && !userName){
+    if(!email ){
         throw new ApiError(400,"All fields are required")
     }
     //find the user
-    const user=await User.findOne({
-        $or:[{userName},{email}]
-    })
+    const user=await User.findOne({email})
     if (!user){
-        throw new ApiError(404,"invalid username/email")
+        throw new ApiError(404,"invalid email")
     }
     //check password
     const isPasswordValid=await user.isPasswordCorrect(password) 

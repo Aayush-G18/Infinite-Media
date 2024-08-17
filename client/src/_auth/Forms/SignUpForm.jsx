@@ -41,7 +41,7 @@ const SignUpForm = () => {
           "Content-Type":"multipart/form-data"
         }
       });
-      console.log("response is: ", res);
+      console.log("response is: ",res);
   } catch (err) {
       setError(err?.message);
       console.log(error)

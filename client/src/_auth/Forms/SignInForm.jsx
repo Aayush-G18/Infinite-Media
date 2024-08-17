@@ -8,16 +8,17 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "@/components/shared/Loader";
+import API from "../../lib/axios";
 
 // Define the validation schema with Zod
 const SignInValidation = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
+  password: z.string().min(8, "Password must be at least 6 characters long"),
 });
 
 const SignInForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-
+  const [error,setError]=useState("")
   const form = useForm({
     resolver: zodResolver(SignInValidation),
     defaultValues: {
@@ -26,14 +27,20 @@ const SignInForm = () => {
     },
   });
 
-  function onSubmit(values) {
+  async function onSubmit(values) {
     // Handle form submission
-    setIsLoading(true);
-    console.log(values);
     // Simulate an async action
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    try {
+      const res=await API.post("/users/login",{
+        email:values.email,
+        password:values.password
+      })
+      console.log("responese is: ",res)
+    } catch (err) {
+      setError(err?.message);
+      console.log(error)
+    }
+
   }
 
   return (
@@ -81,9 +88,10 @@ const SignInForm = () => {
           />
 
           <Button type="submit" className="shad-button_primary">
-            {isLoading ? (
+            {/* {isLoading ? (
               <div className="w-full flex-center"><Loader />Loading...</div>
-            ) : "Sign In"}
+            ) : "Sign In"} */}
+            {error?<p>{error}</p>:"Log-In"}
           </Button>
 
           <p className="text-small-regular text-light-2 text-center mt-2">
